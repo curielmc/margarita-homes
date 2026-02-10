@@ -2,18 +2,3 @@
 @plugin "daisyui" {
   themes: light --default, dark;
 }
-
-@theme {
-  --color-primary: #0d9488;
-  --color-primary-content: #ffffff;
-  --color-secondary: #0284c7;
-  --color-secondary-content: #ffffff;
-  --color-accent: #059669;
-  --color-accent-content: #ffffff;
-  --color-neutral: #1e293b;
-  --color-neutral-content: #f8fafc;
-  --color-base-100: #ffffff;
-  --color-base-200: #f1f5f9;
-  --color-base-300: #e2e8f0;
-  --color-base-content: #1e293b;
-}
