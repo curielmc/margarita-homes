@@ -207,8 +207,12 @@ module Api
 
       def create_photos(property, photos_params)
         photos_params.map do |photo|
+          original_url = photo[:url]
+          cloudinary_url = CloudinaryService.upload_from_url(original_url)
+
           property.property_photos.create!(
-            url: photo[:url],
+            url: cloudinary_url || original_url,
+            original_url: original_url,
             caption: photo[:caption],
             is_primary: photo[:is_primary] || false,
             position: photo[:position] || property.property_photos.count
