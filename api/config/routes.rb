@@ -24,5 +24,33 @@ Rails.application.routes.draw do
         post "market_snapshots/generate", to: "market_snapshots#generate"
       end
     end
+
+    # Jasper API - Full programmatic access for AI assistant
+    namespace :jasper do
+      # Properties - full CRUD + bulk operations
+      resources :properties do
+        collection do
+          post :bulk_create
+          get :stats
+        end
+        member do
+          post :add_photos
+          post :mark_sold
+        end
+        resources :price_histories, only: [:index, :create, :destroy]
+      end
+
+      # Zones - full CRUD + property listing
+      resources :zones do
+        member do
+          get :properties
+        end
+      end
+
+      # Market data
+      get "market/summary", to: "market#summary"
+      get "market/trends", to: "market#trends"
+      post "market/snapshot", to: "market#create_snapshot"
+    end
   end
 end
