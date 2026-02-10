@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Ruby / Rails
+api/log/*
+api/tmp/*
+api/storage/*
+api/.bundle
+api/vendor/bundle
+api/db/*.sqlite3
+api/db/*.sqlite3-*
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Environment
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
