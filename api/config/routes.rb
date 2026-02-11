@@ -38,6 +38,9 @@ Rails.application.routes.draw do
         member do
           post :add_photos
           post :mark_sold
+          delete "photos/cleanup", to: "properties#cleanup_photos"
+          delete "photos/:photo_id", to: "properties#delete_photo"
+          patch "photos/:photo_id", to: "properties#update_photo"
         end
         resources :price_histories, only: [:index, :create, :destroy]
       end

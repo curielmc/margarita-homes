@@ -3,7 +3,7 @@
 module Api
   module Jasper
     class PropertiesController < BaseController
-      before_action :set_property, only: [:show, :update, :destroy, :add_photos]
+      before_action :set_property, only: [:show, :update, :destroy, :add_photos, :delete_photo, :update_photo, :cleanup_photos]
 
       # GET /api/jasper/properties
       def index
@@ -137,6 +137,56 @@ module Api
         render_success({ 
           message: "#{photos_created.size} photo(s) added",
           photos: photos_created.map { |p| photo_json(p) }
+        })
+      end
+
+      # DELETE /api/jasper/properties/:id/photos/:photo_id
+      def delete_photo
+        photo = @property.property_photos.find(params[:photo_id])
+        photo.destroy!
+        render_success({ message: "Photo deleted", id: params[:photo_id].to_i })
+      rescue ActiveRecord::RecordNotFound
+        render_error("Photo not found", status: :not_found)
+      end
+
+      # PATCH /api/jasper/properties/:id/photos/:photo_id
+      def update_photo
+        photo = @property.property_photos.find(params[:photo_id])
+        
+        # If setting as primary, unset all others first
+        if params[:is_primary] == true || params[:is_primary] == "true"
+          @property.property_photos.update_all(is_primary: false)
+        end
+        
+        photo.update!(
+          is_primary: params[:is_primary],
+          caption: params[:caption],
+          position: params[:position]
+        )
+        render_success(photo_json(photo))
+      rescue ActiveRecord::RecordNotFound
+        render_error("Photo not found", status: :not_found)
+      end
+
+      # DELETE /api/jasper/properties/:id/photos/cleanup
+      # Removes all non-Cloudinary photos and sets the first Cloudinary photo as primary
+      def cleanup_photos
+        cloudinary_photos = @property.property_photos.where("url LIKE ?", "%res.cloudinary.com%")
+        non_cloudinary = @property.property_photos.where.not("url LIKE ?", "%res.cloudinary.com%")
+        
+        deleted_count = non_cloudinary.count
+        non_cloudinary.destroy_all
+        
+        # Set first Cloudinary photo as primary
+        if cloudinary_photos.any?
+          @property.property_photos.update_all(is_primary: false)
+          cloudinary_photos.first.update!(is_primary: true)
+        end
+        
+        render_success({
+          message: "Cleanup complete",
+          deleted: deleted_count,
+          remaining: cloudinary_photos.count
         })
       end
 
