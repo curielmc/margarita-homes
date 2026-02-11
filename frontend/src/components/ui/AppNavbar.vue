@@ -24,6 +24,7 @@ function handleLogout() {
           <li><router-link to="/">Home</router-link></li>
           <li><router-link to="/properties">Properties</router-link></li>
           <li><router-link to="/zones">Zones</router-link></li>
+          <li><router-link to="/buildings">Buildings</router-link></li>
           <li><router-link to="/market">Market Trends</router-link></li>
         </ul>
       </div>
@@ -34,6 +35,7 @@ function handleLogout() {
         <li><router-link to="/">Home</router-link></li>
         <li><router-link to="/properties">Properties</router-link></li>
         <li><router-link to="/zones">Zones</router-link></li>
+        <li><router-link to="/buildings">Buildings</router-link></li>
         <li><router-link to="/market">Market Trends</router-link></li>
       </ul>
     </div>

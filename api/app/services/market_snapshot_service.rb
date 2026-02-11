@@ -18,6 +18,19 @@ class MarketSnapshotService
           period_start: period_start
         )
 
+        listing_count = properties.where(status: %w[active pending]).count
+        sold_count = properties.where(status: "sold").where("sold_at >= ? AND sold_at <= ?", period_start, period_end).count
+
+        # Avg days on market for properties with listed_at
+        listed_props = properties.where.not(listed_at: nil)
+        avg_dom = if listed_props.any?
+          days = listed_props.pluck(:listed_at).map { |d| (period_end - d).to_f }
+          (days.sum / days.size).round(2)
+        end
+
+        # Absorption rate: sold / listings
+        abs_rate = listing_count > 0 ? (sold_count.to_f / listing_count).round(4) : nil
+
         snapshot.update!(
           period_end: period_end,
           avg_price: (prices.sum / prices.size).round(2),
@@ -25,8 +38,10 @@ class MarketSnapshotService
           min_price: prices.min,
           max_price: prices.max,
           price_per_sqft: sqft_prices.any? ? (sqft_prices.sum / sqft_prices.size).round(2) : nil,
-          listing_count: properties.where(status: %w[active pending]).count,
-          sold_count: properties.where(status: "sold").where("sold_at >= ? AND sold_at <= ?", period_start, period_end).count
+          listing_count: listing_count,
+          sold_count: sold_count,
+          avg_days_on_market: avg_dom,
+          absorption_rate: abs_rate
         )
       end
     end

@@ -7,7 +7,7 @@ module Api
 
       # GET /api/jasper/properties
       def index
-        properties = Property.includes(:zone, :property_photos, :price_histories)
+        properties = Property.includes(:zone, :building, :property_photos, :price_histories)
 
         # Filters
         properties = properties.by_zone(params[:zone_id]) if params[:zone_id].present?
@@ -199,7 +199,7 @@ module Api
         [
           :title, :address, :description, :current_price_usd,
           :bedrooms, :bathrooms, :sqft, :lot_sqft,
-          :property_type, :status, :zone_id,
+          :property_type, :status, :zone_id, :building_id,
           :latitude, :longitude, :year_built,
           :featured, :listed_at, :sold_at, :source_url
         ]
@@ -207,8 +207,16 @@ module Api
 
       def create_photos(property, photos_params)
         photos_params.map do |photo|
+          cloudinary_url = nil
           original_url = photo[:url]
-          cloudinary_url = CloudinaryService.upload_from_url(original_url)
+
+          # Handle base64 data
+          if photo[:base64].present?
+            cloudinary_url = upload_base64_to_cloudinary(photo[:base64])
+            original_url = "base64_upload"
+          elsif original_url.present?
+            cloudinary_url = CloudinaryService.upload_from_url(original_url)
+          end
 
           property.property_photos.create!(
             url: cloudinary_url || original_url,
@@ -218,6 +226,28 @@ module Api
             position: photo[:position] || property.property_photos.count
           )
         end
+      end
+
+      def upload_base64_to_cloudinary(base64_data)
+        # Handle data URL format (data:image/jpeg;base64,...)
+        if base64_data.start_with?("data:")
+          base64_data = base64_data.split(",")[1]
+        end
+
+        # Decode and create temp file
+        decoded = Base64.decode64(base64_data)
+        temp_file = Tempfile.new(["photo", ".jpg"])
+        temp_file.binmode
+        temp_file.write(decoded)
+        temp_file.rewind
+
+        CloudinaryService.upload_file(temp_file)
+      rescue => e
+        Rails.logger.error("[PropertiesController] Base64 upload failed: #{e.message}")
+        nil
+      ensure
+        temp_file&.close
+        temp_file&.unlink
       end
 
       def property_json(property, full: false)
@@ -239,6 +269,7 @@ module Api
           },
           primary_photo: property.primary_photo&.url,
           listed_at: property.listed_at,
+          building: property.building ? { id: property.building.id, name: property.building.name } : nil,
           created_at: property.created_at,
           updated_at: property.updated_at
         }

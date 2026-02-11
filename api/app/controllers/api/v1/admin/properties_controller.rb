@@ -51,7 +51,7 @@ module Api
 
         def property_params
           params.permit(
-            :zone_id, :data_source_id, :title, :address, :property_type, :status,
+            :zone_id, :building_id, :data_source_id, :title, :address, :property_type, :status,
             :bedrooms, :bathrooms, :sqft, :lot_sqft, :year_built, :description,
             :latitude, :longitude, :source_url, :featured, :current_price_usd,
             :listed_at, :sold_at

@@ -2,7 +2,8 @@ class MarketSnapshotSerializer
   include JSONAPI::Serializer
 
   attributes :property_type, :period_start, :period_end, :avg_price, :median_price,
-             :min_price, :max_price, :price_per_sqft, :listing_count, :sold_count
+             :min_price, :max_price, :price_per_sqft, :listing_count, :sold_count,
+             :avg_days_on_market, :absorption_rate
 
   attribute :zone_name do |snapshot|
     snapshot.zone.name

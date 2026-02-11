@@ -16,7 +16,7 @@ module Api
       # POST /api/jasper/market/snapshot
       def create_snapshot
         zone = Zone.find(params[:zone_id])
-        
+
         snapshot = MarketSnapshot.new(
           zone: zone,
           property_type: params[:property_type],
@@ -48,6 +48,15 @@ module Api
             snapshot.price_per_sqft = sqft_prices.sum { |p, s| p / s } / sqft_prices.size
           end
         end
+
+        # Calculate new stats
+        listed = properties.active.where.not(listed_at: nil)
+        if listed.any?
+          days = listed.pluck(:listed_at).map { |d| (snapshot.period_end - d).to_f }
+          snapshot.avg_days_on_market = (days.sum / days.size).round(2)
+        end
+
+        snapshot.absorption_rate = snapshot.listing_count > 0 ? (snapshot.sold_count.to_f / snapshot.listing_count).round(4) : nil
 
         if snapshot.save
           render_success(snapshot_json(snapshot), status: :created)
@@ -86,7 +95,10 @@ module Api
             max: active.maximum(:current_price_usd)
           },
           avg_sqft: active.where("sqft > 0").average(:sqft)&.round(0),
-          avg_price_per_sqft: calculate_avg_price_per_sqft(active)
+          avg_price_per_sqft: calculate_avg_price_per_sqft(active),
+          avg_days_on_market: calculate_avg_dom(active),
+          absorption_rate: calculate_absorption_rate(active),
+          inventory_months: calculate_inventory_months(active)
         }
       end
 
@@ -99,21 +111,23 @@ module Api
             slug: zone.slug,
             listings: zone.properties_count,
             active_listings: active.count,
-            avg_price: active.average(:current_price_usd)&.round(2)
+            avg_price: active.average(:current_price_usd)&.round(2),
+            avg_price_per_sqft: calculate_avg_price_per_sqft(active)
           }
         end
       end
 
       def type_breakdown
         Property::PROPERTY_TYPES ||= %w[house apartment condo townhouse land commercial]
-        
+
         Property::PROPERTY_TYPES.map do |type|
           active = Property.active.by_type(type)
           {
             type: type,
             count: active.count,
             avg_price: active.average(:current_price_usd)&.round(2),
-            avg_sqft: active.where("sqft > 0").average(:sqft)&.round(0)
+            avg_sqft: active.where("sqft > 0").average(:sqft)&.round(0),
+            avg_price_per_sqft: calculate_avg_price_per_sqft(active)
           }
         end
       rescue
@@ -122,7 +136,8 @@ module Api
           {
             type: type,
             count: count,
-            avg_price: active.average(:current_price_usd)&.round(2)
+            avg_price: active.average(:current_price_usd)&.round(2),
+            avg_price_per_sqft: calculate_avg_price_per_sqft(active)
           }
         end
       end
@@ -150,7 +165,9 @@ module Api
           median_price: snapshot.median_price,
           min_price: snapshot.min_price,
           max_price: snapshot.max_price,
-          price_per_sqft: snapshot.price_per_sqft
+          price_per_sqft: snapshot.price_per_sqft,
+          avg_days_on_market: snapshot.avg_days_on_market,
+          absorption_rate: snapshot.absorption_rate
         }
       end
 
@@ -167,6 +184,26 @@ module Api
 
         total = valid.sum("current_price_usd / sqft")
         (total / valid.count).round(2)
+      end
+
+      def calculate_avg_dom(scope)
+        listed = scope.where.not(listed_at: nil)
+        return nil if listed.none?
+        listed.average(Arel.sql("CURRENT_DATE - listed_at"))&.round(1)
+      end
+
+      def calculate_absorption_rate(scope)
+        active_count = scope.count
+        return nil if active_count == 0
+        sold_last_30 = Property.where(status: "sold").where("sold_at >= ?", 30.days.ago).count
+        (sold_last_30.to_f / active_count).round(4)
+      end
+
+      def calculate_inventory_months(scope)
+        active_count = scope.count
+        sold_last_12mo = Property.where(status: "sold").where("sold_at >= ?", 12.months.ago).count
+        return nil if sold_last_12mo == 0
+        (active_count / (sold_last_12mo / 12.0)).round(1)
       end
     end
   end

@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       # Public
       resources :properties, only: [:index, :show]
       resources :zones, only: [:index, :show]
+      resources :buildings, only: [:index, :show]
 
       get "market/overview", to: "market#overview"
       get "market/trends", to: "market#trends"
@@ -20,6 +21,7 @@ Rails.application.routes.draw do
         end
 
         resources :zones, only: [:create, :update, :destroy]
+        resources :buildings
 
         post "market_snapshots/generate", to: "market_snapshots#generate"
       end
@@ -43,6 +45,14 @@ Rails.application.routes.draw do
       # Zones - full CRUD + property listing
       resources :zones do
         member do
+          get :properties
+        end
+      end
+
+      # Buildings - full CRUD + property assignment
+      resources :buildings do
+        member do
+          post :assign_properties
           get :properties
         end
       end

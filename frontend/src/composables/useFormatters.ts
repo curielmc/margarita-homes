@@ -42,5 +42,15 @@ export function useFormatters() {
     return type.charAt(0).toUpperCase() + type.slice(1)
   }
 
-  return { formatCurrency, formatNumber, formatDate, formatSqft, statusColor, propertyTypeLabel }
+  function formatPercent(value: number | null | undefined): string {
+    if (value == null) return 'N/A'
+    return `${value.toFixed(1)}%`
+  }
+
+  function formatDecimal(value: number | null | undefined, decimals = 1): string {
+    if (value == null) return 'N/A'
+    return value.toFixed(decimals)
+  }
+
+  return { formatCurrency, formatNumber, formatDate, formatSqft, statusColor, propertyTypeLabel, formatPercent, formatDecimal }
 }

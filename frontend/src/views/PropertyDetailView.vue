@@ -148,6 +148,14 @@ const currentPhoto = computed(() => {
               View {{ property.attributes.zone_name }} Zone
             </router-link>
 
+            <router-link
+              v-if="property.attributes.building_id"
+              :to="`/buildings/${property.attributes.building_id}`"
+              class="btn btn-outline btn-primary btn-sm w-full mt-2"
+            >
+              View {{ property.attributes.building_name }} Building
+            </router-link>
+
             <!-- Location Map -->
             <div v-if="property.attributes.latitude && property.attributes.longitude" class="mt-4">
               <h3 class="text-sm font-semibold mb-2">Location</h3>

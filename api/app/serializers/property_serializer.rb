@@ -20,4 +20,12 @@ class PropertySerializer
   attribute :primary_photo_url do |property|
     property.primary_photo&.url
   end
+
+  attribute :building_id do |property|
+    property.building_id
+  end
+
+  attribute :building_name do |property|
+    property.building&.name
+  end
 end

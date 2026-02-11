@@ -1,5 +1,6 @@
 class Zone < ApplicationRecord
   has_many :properties, dependent: :destroy
+  has_many :buildings, dependent: :destroy
   has_many :market_snapshots, dependent: :destroy
 
   validates :name, presence: true

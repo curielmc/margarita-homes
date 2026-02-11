@@ -37,6 +37,8 @@ export interface Property {
     zone_name: string
     zone_slug: string
     primary_photo_url: string | null
+    building_id: number | null
+    building_name: string | null
   }
   relationships?: {
     property_photos?: { data: { id: string; type: string }[] }
@@ -82,7 +84,28 @@ export interface MarketSnapshot {
     sold_count: number
     zone_name: string
     zone_slug: string
+    avg_days_on_market: number | null
+    absorption_rate: number | null
   }
+}
+
+export interface MarketByType {
+  type: string
+  count: number
+  avg_price: number | null
+  median_price: number | null
+  avg_price_per_sqft: number | null
+  count_with_sqft: number
+}
+
+export interface MarketByZone {
+  id: number
+  name: string
+  slug: string
+  count: number
+  avg_price: number | null
+  median_price: number | null
+  avg_price_per_sqft: number | null
 }
 
 export interface MarketOverview {
@@ -92,8 +115,39 @@ export interface MarketOverview {
   total_sold_last_30: number
   zones_count: number
   price_range: { min: number; max: number }
-  by_type: { type: string; count: number; avg_price: number }[]
+  by_type: MarketByType[]
+  by_zone: MarketByZone[]
   featured_count: number
+  avg_price_per_sqft: number | null
+  median_price_per_sqft: number | null
+  avg_days_on_market: number | null
+  inventory_months: number | null
+  absorption_rate: number | null
+  price_reduction_pct: number | null
+  year_over_year: number | null
+}
+
+export interface Building {
+  id: string
+  type: string
+  attributes: {
+    name: string
+    address: string
+    zone_id: number
+    zone_name: string
+    zone_slug: string
+    latitude: number | null
+    longitude: number | null
+    year_built: number | null
+    total_units: number | null
+    floors: number | null
+    amenities: string | null
+    description: string | null
+    units_listed: number
+    avg_price: number | null
+    avg_price_per_sqft: number | null
+    price_range: { min: number | null; max: number | null }
+  }
 }
 
 export interface PaginationMeta {

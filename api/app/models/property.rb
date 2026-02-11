@@ -1,5 +1,6 @@
 class Property < ApplicationRecord
   belongs_to :zone
+  belongs_to :building, optional: true
   belongs_to :data_source, optional: true
   has_many :property_photos, dependent: :destroy
   has_many :price_histories, dependent: :destroy

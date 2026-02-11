@@ -31,7 +31,15 @@ const { formatSqft, statusColor, propertyTypeLabel } = useFormatters()
         <span v-if="property.attributes.sqft">{{ formatSqft(Number(property.attributes.sqft)) }}</span>
       </div>
       <div class="flex justify-between items-center mt-2">
-        <span class="badge badge-outline badge-sm">{{ propertyTypeLabel(property.attributes.property_type) }}</span>
+        <div class="flex gap-1">
+          <span class="badge badge-outline badge-sm">{{ propertyTypeLabel(property.attributes.property_type) }}</span>
+          <router-link
+            v-if="property.attributes.building_name"
+            :to="`/buildings/${property.attributes.building_id}`"
+            class="badge badge-primary badge-sm"
+            @click.stop
+          >{{ property.attributes.building_name }}</router-link>
+        </div>
         <span class="text-xs text-base-content/50">{{ property.attributes.zone_name }}</span>
       </div>
     </div>

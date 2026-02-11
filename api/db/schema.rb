@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_10_172122) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_10_180003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -21,6 +21,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_172122) do
     t.string "password_digest", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_admin_users_on_email", unique: true
+  end
+
+  create_table "buildings", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "address"
+    t.bigint "zone_id", null: false
+    t.decimal "latitude", precision: 10, scale: 7
+    t.decimal "longitude", precision: 10, scale: 7
+    t.integer "year_built"
+    t.integer "total_units"
+    t.integer "floors"
+    t.text "amenities"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_buildings_on_name"
+    t.index ["zone_id"], name: "index_buildings_on_zone_id"
   end
 
   create_table "data_sources", force: :cascade do |t|
@@ -46,6 +63,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_172122) do
     t.integer "sold_count", default: 0
     t.datetime "updated_at", null: false
     t.bigint "zone_id", null: false
+    t.decimal "avg_days_on_market", precision: 8, scale: 2
+    t.decimal "absorption_rate", precision: 8, scale: 4
     t.index ["zone_id", "property_type", "period_start"], name: "idx_snapshots_zone_type_period", unique: true
     t.index ["zone_id"], name: "index_market_snapshots_on_zone_id"
   end
@@ -87,6 +106,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_172122) do
     t.datetime "updated_at", null: false
     t.integer "year_built"
     t.bigint "zone_id", null: false
+    t.bigint "building_id"
+    t.index ["building_id"], name: "index_properties_on_building_id"
     t.index ["current_price_usd"], name: "index_properties_on_current_price_usd"
     t.index ["data_source_id"], name: "index_properties_on_data_source_id"
     t.index ["featured"], name: "index_properties_on_featured"
@@ -119,9 +140,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_172122) do
     t.index ["slug"], name: "index_zones_on_slug", unique: true
   end
 
+  add_foreign_key "buildings", "zones"
   add_foreign_key "market_snapshots", "zones"
   add_foreign_key "price_histories", "data_sources"
   add_foreign_key "price_histories", "properties"
+  add_foreign_key "properties", "buildings"
   add_foreign_key "properties", "data_sources"
   add_foreign_key "properties", "zones"
   add_foreign_key "property_photos", "properties"
