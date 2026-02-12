@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 
-const props = defineProps<{ data: { type: string; count: number; avg_price: number }[] }>()
+const props = defineProps<{ data: { type: string; count: number; avg_price: number | null }[] }>()
 const chartRef = ref<HTMLDivElement>()
 let chart: echarts.ECharts | null = null
 
