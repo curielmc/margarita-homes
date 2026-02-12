@@ -64,6 +64,10 @@ Rails.application.routes.draw do
       get "market/summary", to: "market#summary"
       get "market/trends", to: "market#trends"
       post "market/snapshot", to: "market#create_snapshot"
+
+      # Tasks / Maintenance
+      get "tasks/photo_status", to: "tasks#photo_status"
+      post "tasks/migrate_photos", to: "tasks#migrate_photos"
     end
   end
 end

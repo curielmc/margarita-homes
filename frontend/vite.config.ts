@@ -13,18 +13,27 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor': ['vue', 'vue-router', 'echarts'],
-          'charts': ['@/components/charts/MarketTrendChart.vue', '@/components/charts/PropertyTypeChart.vue'],
-          'views': [
-            '@/views/HomeView.vue', 
-            '@/views/PropertiesView.vue', 
-            '@/views/MarketTrendsView.vue'
-          ]
+        manualChunks(id) {
+          // Split out huge libraries
+          if (id.includes('node_modules/echarts') || id.includes('node_modules/zrender')) {
+            return 'echarts'
+          }
+          // Split out vue-related libraries
+          if (id.includes('node_modules/vue') || id.includes('node_modules/@vue')) {
+            return 'vue-vendor'
+          }
+          // Split out router
+          if (id.includes('node_modules/vue-router')) {
+            return 'vue-router'
+          }
+          // Default chunking
+          if (id.includes('node_modules')) {
+            return 'vendor'
+          }
         }
       }
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 1500,  // Slightly higher limit
     sourcemap: false
   },
   server: {
